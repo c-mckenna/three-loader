@@ -29,15 +29,25 @@ interface WorkerResponse {
 
 interface BinaryLoaderOptions {
   getUrl?: GetUrlFn;
-  version: string;
+  version: string | Version;
   boundingBox: Box3;
   scale: number;
   xhrRequest: XhrRequest;
 }
 
-type Callback = (node: PointCloudOctreeGeometryNode) => void;
+export type Callback = (node: PointCloudOctreeGeometryNode) => void;
 
-export class BinaryLoader {
+export interface Loader {
+  version: Version;
+  getUrl: GetUrlFn;
+  disposed: boolean;
+  callbacks: Callback[];
+
+  dispose(): void;
+  load(node: PointCloudOctreeGeometryNode): Promise<void>;
+}
+
+export class BinaryLoader implements Loader {
   version: Version;
   boundingBox: Box3;
   scale: number;
@@ -49,12 +59,12 @@ export class BinaryLoader {
   private workers: Worker[] = [];
 
   constructor({
-    getUrl = s => Promise.resolve(s),
-    version,
-    boundingBox,
-    scale,
-    xhrRequest,
-  }: BinaryLoaderOptions) {
+                getUrl = s => Promise.resolve(s),
+                version,
+                boundingBox,
+                scale,
+                xhrRequest,
+              }: BinaryLoaderOptions) {
     if (typeof version === 'string') {
       this.version = new Version(version);
     } else {

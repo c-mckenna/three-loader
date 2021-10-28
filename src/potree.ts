@@ -17,7 +17,8 @@ import {
   PERSPECTIVE_CAMERA,
 } from './constants';
 import { FEATURES } from './features';
-import { GetUrlFn, loadPOC } from './loading';
+import { BinaryLoader, GetUrlFn, loadPOC } from './loading';
+import { OctreeLoader } from './loading/octree-loader';
 import { ClipMode } from './materials';
 import { PointCloudOctree } from './point-cloud-octree';
 import { PointCloudOctreeGeometryNode } from './point-cloud-octree-geometry-node';
@@ -52,7 +53,14 @@ export class Potree implements IPotree {
     getUrl: GetUrlFn,
     xhrRequest = (input: RequestInfo, init?: RequestInit) => fetch(input, init),
   ): Promise<PointCloudOctree> {
-    return loadPOC(url, getUrl, xhrRequest).then(geometry => new PointCloudOctree(this, geometry));
+    if (url.endsWith('cloud.js')) {
+      return loadPOC(url, getUrl, xhrRequest).then(geometry => new PointCloudOctree(this, geometry));
+    } else if (url.endsWith('metadata.json')) {
+      return OctreeLoader.load(getUrl(url) as string).then(geometry => new PointCloudOctree(this, geometry as any)); //TODO: any
+      // return loadOctree(url, getUrl, xhrRequest).then(geometry => new PointCloudOctree(this, geometry as any)); //TODO: any
+    } else {
+      throw new Error(`Unknown point cloud format: ${url}`);
+    }
   }
 
   updatePointClouds(

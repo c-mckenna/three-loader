@@ -39,15 +39,23 @@ export interface IPointAttribute {
   type: PointAttributeType;
   numElements: number;
   byteSize: number;
+  range?: [number, number] | [[number, number, number], [number, number, number]];
+  initialRange?: [number, number] | [[number, number, number], [number, number, number]];
+}
+
+export interface IVectorAttribute {
+  name: string;
+  attributes: string[];
 }
 
 export interface IPointAttributes {
   attributes: IPointAttribute[];
   byteSize: number;
   size: number;
+  vectors: IVectorAttribute[];
 }
 
-function makePointAttribute(
+export function makePointAttribute(
   name: PointAttributeName,
   type: PointAttributeType,
   numElements: number,
@@ -118,6 +126,7 @@ export class PointAttributes implements IPointAttributes {
   attributes: IPointAttribute[] = [];
   byteSize: number = 0;
   size: number = 0;
+  vectors: IVectorAttribute[] = [];
 
   constructor(pointAttributeNames: PointAttributeStringName[] = []) {
     for (let i = 0; i < pointAttributeNames.length; i++) {
@@ -133,6 +142,10 @@ export class PointAttributes implements IPointAttributes {
     this.attributes.push(pointAttribute);
     this.byteSize += pointAttribute.byteSize;
     this.size++;
+  }
+
+  addVector(vector: IVectorAttribute): void {
+    this.vectors.push(vector);
   }
 
   hasColors(): boolean {
