@@ -9,3 +9,4 @@ export * from './point-cloud-tree';
 export * from './potree';
 export * from './types';
 export * from './version';
+export * from './loading';
